@@ -1,0 +1,70 @@
+# AI Security Tool - Main Agent Application
+# Dockerfile for the autonomous security analysis platform
+
+# Use Python 3.11 slim image as base
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies required for security tools
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    git \
+    curl \
+    wget \
+    file \
+    unzip \
+    python3-dev \
+    libffi-dev \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements file first for better Docker layer caching
+COPY src/requirements.txt .
+
+# Install Python dependencies
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
+
+# Copy the source code
+COPY src/ ./src/
+COPY main.py .
+
+# Create necessary directories
+RUN mkdir -p /app/logs /app/data /app/wordlists
+
+# Set permissions
+RUN chmod +x main.py
+
+# Create non-root user for security
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN chown -R appuser:appuser /app
+USER appuser
+
+# Set environment variables for the application
+ENV LLM_ENDPOINT=http://llm-service:8000/generate \
+    LLM_API_KEY=test-key \
+    LLM_MODEL=gpt-3.5-turbo \
+    REQUIRE_HUMAN_APPROVAL=true \
+    MAX_TOOL_CALLS=5
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import sys; sys.path.append('/app/src'); from agent import LLMAutonomousAgent; print('OK')" || exit 1
+
+# Expose port (if needed for future web interface)
+EXPOSE 8080
+
+# Define entrypoint
+ENTRYPOINT ["python", "main.py"]
+
+# Default command (can be overridden)
+CMD ["--help"]

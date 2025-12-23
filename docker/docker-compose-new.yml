@@ -1,0 +1,169 @@
+version: '3.8'
+
+services:
+  # LLM Service - Provides AI language model capabilities
+  llm-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: ai-offensive-llm-service
+    ports:
+      - "8000:8000"
+    environment:
+      - LLM_MODEL=gpt-3.5-turbo
+      - LLM_API_KEY=test-key
+      - MAX_TOKENS=2048
+      - TEMPERATURE=0.7
+    volumes:
+      # Mount LLM weights directory - NOTE: Model weights need to be managed separately
+      # This volume should contain the actual model weights for local LLM inference
+      - ./llm-weights:/opt/llm/weights:ro
+      # Mount configuration files
+      - ../config:/app/config:ro
+      # Mount logs directory
+      - ../data/logs:/app/logs
+    networks:
+      - ai-security-network
+    restart: unless-stopped
+    # GPU Configuration - Uncomment if GPU support is available
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Agent Application - Main AI security analysis tool
+  agent-app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: ai-offensive-agent-app
+    depends_on:
+      llm-service:
+        condition: service_healthy
+    environment:
+      # LLM Configuration
+      - LLM_API_ENDPOINT=http://llm-service:8000/generate
+      - LLM_API_KEY=test-key
+      - LLM_MODEL=gpt-3.5-turbo
+      - MAX_TOKENS=2048
+      - TEMPERATURE=0.7
+
+      # Agent Configuration
+      - REQUIRE_HUMAN_APPROVAL=true
+      - MAX_TOOL_CALLS=10
+      - LOG_LEVEL=INFO
+
+      # Security Configuration
+      - ENABLE_AUDIT_LOGGING=true
+      - SESSION_TIMEOUT=3600
+    volumes:
+      # Agent source code
+      - ../src:/app/src:ro
+      # Configuration files
+      - ../config:/app/config:ro
+      # Data directory for results, memory, and temporary files
+      - ../data:/app/data
+      # Tools directory for scripts and utilities
+      - ../tools:/app/tools:ro
+      # Hacking tools mounted from container
+      - /opt/hacking_tools:/opt/hacking_tools:ro
+    networks:
+      - ai-security-network
+    restart: unless-stopped
+    # GPU Configuration - Uncomment if GPU support is available
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import requests; requests.get('http://localhost:8000/health')" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+  # Optional: Database for persistent storage
+  # Uncomment if you need persistent data storage
+  # database:
+  #   image: postgres:15-alpine
+  #   container_name: ai-offensive-db
+  #   environment:
+  #     - POSTGRES_DB=ai_security
+  #     - POSTGRES_USER=ai_user
+  #     - POSTGRES_PASSWORD=secure_password
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - ai-security-network
+  #   restart: unless-stopped
+
+  # Optional: Redis for caching and session management
+  # Uncomment if you need caching capabilities
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: ai-offensive-redis
+  #   volumes:
+  #     - redis_data:/data
+  #   networks:
+  #     - ai-security-network
+  #   restart: unless-stopped
+
+networks:
+  ai-security-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  # Persistent volume for LLM weights
+  llm-weights:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./llm-weights
+  # Uncomment if using database
+  # postgres_data:
+  #   driver: local
+
+  # Uncomment if using Redis
+  # redis_data:
+  #   driver: local
+
+  # GPU Usage Notes:
+  # 1. To enable GPU support, uncomment the deploy sections in both services
+  # 2. Ensure NVIDIA Docker runtime is installed: nvidia-docker2
+  # 3. Verify GPU availability: docker run --rm --gpus all nvidia/cuda:11.0-base nvidia-smi
+  # 4. For CPU-only deployment, keep GPU sections commented out
+  #
+  # LLM Weights Management:
+  # 1. Create ./llm-weights directory and place model weights there
+  # 2. Models should be in formats compatible with the installed frameworks
+  # 3. Common formats: .bin, .safetensors, .pt, .pth
+  # 4. Ensure proper permissions on the weights directory
+  #
+  # Volume Mounts for Persistence:
+  # 1. ./data - Stores analysis results, memory, and temporary files
+  # 2. ./config - Configuration files and settings
+  # 3. ./src - Agent source code (read-only for security)
+  # 4. ./tools - Security tools and scripts (read-only for security)
+  # 5. ./llm-weights - Model weights (read-only for security)
+  #
+  # Environment Variables:
+  # 1. LLM_API_ENDPOINT - Points to the LLM service
+  # 2. REQUIRE_HUMAN_APPROVAL - Enables human oversight for critical actions
+  # 3. MAX_TOOL_CALLS - Limits the number of tool calls per session
+  # 4. LOG_LEVEL - Controls logging verbosity
+  # 5. ENABLE_AUDIT_LOGGING - Enables comprehensive audit logging

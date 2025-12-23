@@ -1,0 +1,72 @@
+# AI Security Tool - Docker Compose Configuration
+# Uses the new Dockerfile for the main agent application
+
+version: '3.8'
+
+services:
+  # Mock LLM Service
+  llm-service:
+    build:
+      context: ./mock_llm
+      dockerfile: Dockerfile
+    container_name: ai-security-llm
+    ports:
+      - "8000:8000"
+    networks:
+      - security-network
+    environment:
+      - SERVICE_NAME=Mock LLM Service
+      - SERVICE_PORT=8000
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # Main AI Security Agent Application
+  ai-security-agent:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.agent
+    container_name: ai-security-agent
+    depends_on:
+      llm-service:
+        condition: service_healthy
+    networks:
+      - security-network
+    environment:
+      - LLM_ENDPOINT=http://llm-service:8000/generate
+      - LLM_API_KEY=test-key
+      - LLM_MODEL=gpt-3.5-turbo
+      - REQUIRE_HUMAN_APPROVAL=true
+      - MAX_TOOL_CALLS=5
+      - LLM_MAX_TOKENS=2000
+      - LLM_TEMPERATURE=0.7
+      - LLM_TIMEOUT=30
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./wordlists:/app/wordlists
+      - agent_memory:/app/memory
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import sys; sys.path.append('/app/src'); from agent import LLMAutonomousAgent; print('OK')" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    # Enable stdin for interactive mode
+    stdin_open: true
+    tty: true
+
+networks:
+  security-network:
+    driver: bridge
+    name: ai-security-network
+
+volumes:
+  agent_memory:
+    driver: local
+    name: ai-security-agent-memory

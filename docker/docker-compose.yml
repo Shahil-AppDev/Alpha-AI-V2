@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  agent-app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: agent-app
+    working_dir: /app
+    volumes:
+      - ../src:/app/src
+      - ../tools:/app/tools
+      - ../config:/app/config
+      - ../data:/app/data
+      - ./llm_weights:/opt/llms/weights
+    environment:
+      - PYTHONPATH=/app
+      - LLM_API_URL=http://llm-service:8000/generate
+      - LLM_WEIGHTS_PATH=/opt/llms/weights
+      - PYTHONUNBUFFERED=1
+    networks:
+      - security-network
+    depends_on:
+      - llm-service
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+
+  llm-service:
+    image: python:3.11-slim
+    container_name: llm-service
+    working_dir: /app
+    command: python server.py
+    volumes:
+      - ./mock_llm:/app
+      - ./llm_weights:/opt/llms/weights
+    ports:
+      - "8000:8000"
+    networks:
+      - security-network
+    restart: unless-stopped
+    environment:
+      - PYTHONPATH=/app
+      - LLM_WEIGHTS_PATH=/opt/llms/weights
+      - CPU_THREADS=4
+      - MAX_MEMORY=8G
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 8G
+        reservations:
+          cpus: '2.0'
+          memory: 4G
+
+networks:
+  security-network:
+    driver: bridge
