@@ -1,0 +1,293 @@
+version: '3.8'
+
+services:
+  # Main HackerAI Platform
+  hackerai-platform:
+    build:
+      context: ../../
+      dockerfile: docker/hackerai-platform/Dockerfile
+    container_name: hackerai-platform
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    volumes:
+      - ./data:/opt/hackerai/data
+      - ./config:/opt/hackerai/config
+      - ./logs:/opt/hackerai/logs
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - HACKERAI_ENV=production
+      - HACKERAI_LOG_LEVEL=INFO
+      - HACKERAI_MAX_CONCURRENT_TOOLS=10
+      - HACKERAI_ENABLE_DOCKER=true
+      - HACKERAI_ENABLE_K8S=false
+    networks:
+      - hackerai-network
+    depends_on:
+      - redis
+      - postgres
+      - minio
+
+  # Redis for caching and job queue
+  redis:
+    image: redis:7-alpine
+    container_name: hackerai-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - hackerai-network
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+
+  # PostgreSQL for persistent storage
+  postgres:
+    image: postgres:15-alpine
+    container_name: hackerai-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    environment:
+      - POSTGRES_DB=hackerai
+      - POSTGRES_USER=hackerai
+      - POSTGRES_PASSWORD=hackerai_secure_password_2024
+    networks:
+      - hackerai-network
+
+  # MinIO for object storage (reports, logs, etc.)
+  minio:
+    image: minio/minio:latest
+    container_name: hackerai-minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    environment:
+      - MINIO_ROOT_USER=hackerai
+      - MINIO_ROOT_PASSWORD=hackerai_secure_password_2024
+    networks:
+      - hackerai-network
+    command: server /data --console-address ":9001"
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: hackerai-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    networks:
+      - hackerai-network
+    depends_on:
+      - hackerai-platform
+
+  # Prometheus for monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: hackerai-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - hackerai-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: hackerai-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=hackerai_admin_2024
+    networks:
+      - hackerai-network
+    depends_on:
+      - prometheus
+
+  # Tool-specific containers (isolated execution environments)
+
+  # OSINT Tools Container
+  osint-tools:
+    build:
+      context: ../../
+      dockerfile: docker/tools/osint/Dockerfile
+    container_name: hackerai-osint
+    restart: unless-stopped
+    volumes:
+      - ./data/osint:/data
+      - ./config:/config
+    networks:
+      - hackerai-network
+    profiles:
+      - tools
+
+  # Network Scanning Container
+  network-tools:
+    build:
+      context: ../../
+      dockerfile: docker/tools/network/Dockerfile
+    container_name: hackerai-network
+    restart: unless-stopped
+    volumes:
+      - ./data/network:/data
+      - ./config:/config
+    networks:
+      - hackerai-network
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    profiles:
+      - tools
+
+  # Web Security Container
+  web-tools:
+    build:
+      context: ../../
+      dockerfile: docker/tools/web/Dockerfile
+    container_name: hackerai-web
+    restart: unless-stopped
+    volumes:
+      - ./data/web:/data
+      - ./config:/config
+    networks:
+      - hackerai-network
+    profiles:
+      - tools
+
+  # Password Cracking Container (GPU-enabled)
+  password-tools:
+    build:
+      context: ../../
+      dockerfile: docker/tools/password/Dockerfile
+    container_name: hackerai-password
+    restart: unless-stopped
+    volumes:
+      - ./data/password:/data
+      - ./wordlists:/wordlists
+    networks:
+      - hackerai-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+    profiles:
+      - tools
+
+  # Exploitation Container
+  exploit-tools:
+    build:
+      context: ../../
+      dockerfile: docker/tools/exploit/Dockerfile
+    container_name: hackerai-exploit
+    restart: unless-stopped
+    volumes:
+      - ./data/exploit:/data
+      - ./config:/config
+    networks:
+      - hackerai-network
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - tools
+
+  # Wireless Security Container
+  wireless-tools:
+    build:
+      context: ../../
+      dockerfile: docker/tools/wireless/Dockerfile
+    container_name: hackerai-wireless
+    restart: unless-stopped
+    volumes:
+      - ./data/wireless:/data
+      - ./config:/config
+    networks:
+      - hackerai-network
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    devices:
+      - /dev/bus/usb:/dev/bus/usb
+    profiles:
+      - tools
+
+  # Forensics Container
+  forensics-tools:
+    build:
+      context: ../../
+      dockerfile: docker/tools/forensics/Dockerfile
+    container_name: hackerai-forensics
+    restart: unless-stopped
+    volumes:
+      - ./data/forensics:/data
+      - ./evidence:/evidence
+    networks:
+      - hackerai-network
+    profiles:
+      - tools
+
+  # Malware Analysis Container (isolated)
+  malware-tools:
+    build:
+      context: ../../
+      dockerfile: docker/tools/malware/Dockerfile
+    container_name: hackerai-malware
+    restart: unless-stopped
+    volumes:
+      - ./data/malware:/data
+      - ./samples:/samples:ro
+    networks:
+      - malware-network
+    security_opt:
+      - no-new-privileges:true
+      - apparmor:docker-default
+    profiles:
+      - tools
+
+networks:
+  hackerai-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+  malware-network:
+    driver: bridge
+    internal: true
+
+volumes:
+  redis-data:
+    driver: local
+  postgres-data:
+    driver: local
+  minio-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local

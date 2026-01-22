@@ -1,0 +1,347 @@
+version: '3.8'
+
+services:
+  # Main Security Orchestrator
+  security-orchestrator:
+    build:
+      context: ../../
+      dockerfile: docker/security-orchestrator/Dockerfile
+    container_name: security-orchestrator
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - DATABASE_URL=postgresql://orchestrator:${POSTGRES_PASSWORD}@postgres:5432/orchestrator_db
+      - REDIS_URL=redis://redis:6379/0
+      - LOG_LEVEL=INFO
+      - ENVIRONMENT=production
+    volumes:
+      - ./config:/etc/security-orchestrator
+      - ./logs:/var/log/security-orchestrator
+      - ./data:/var/lib/security-orchestrator
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - postgres
+      - redis
+      - elasticsearch
+    networks:
+      - security-net
+    security_opt:
+      - no-new-privileges:true
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    privileged: true
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: security-orchestrator-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=orchestrator_db
+      - POSTGRES_USER=orchestrator
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - security-net
+    ports:
+      - "5432:5432"
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: security-orchestrator-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    networks:
+      - security-net
+    ports:
+      - "6379:6379"
+
+  # Elasticsearch for Logging and Search
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: security-orchestrator-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - security-net
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+
+  # Kibana for Visualization
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: security-orchestrator-kibana
+    restart: unless-stopped
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - security-net
+    ports:
+      - "5601:5601"
+
+  # Prometheus for Metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: security-orchestrator-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - security-net
+    ports:
+      - "9090:9090"
+
+  # Grafana for Dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: security-orchestrator-grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - security-net
+    ports:
+      - "3000:3000"
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: security-orchestrator-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - security-orchestrator
+    networks:
+      - security-net
+
+  # BlackArch Tools Container
+  blackarch-tools:
+    build:
+      context: ../../
+      dockerfile: docker/tools/blackarch/Dockerfile
+    container_name: security-orchestrator-blackarch
+    restart: unless-stopped
+    volumes:
+      - blackarch_data:/opt/blackarch
+      - ./tools/blackarch/config:/etc/blackarch
+    networks:
+      - security-net
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+
+  # Offensive Security Tools
+  offensive-tools:
+    build:
+      context: ../../
+      dockerfile: docker/tools/offensive/Dockerfile
+    container_name: security-orchestrator-offensive
+    restart: unless-stopped
+    volumes:
+      - offensive_data:/opt/offensive
+      - ./tools/offensive/config:/etc/offensive
+    networks:
+      - security-net
+    privileged: true
+
+  # Defensive Security Tools
+  defensive-tools:
+    build:
+      context: ../../
+      dockerfile: docker/tools/defensive/Dockerfile
+    container_name: security-orchestrator-defensive
+    restart: unless-stopped
+    volumes:
+      - defensive_data:/opt/defensive
+      - ./tools/defensive/config:/etc/defensive
+    networks:
+      - security-net
+    privileged: true
+
+  # OSINT Tools
+  osint-tools:
+    build:
+      context: ../../
+      dockerfile: docker/tools/osint/Dockerfile
+    container_name: security-orchestrator-osint
+    restart: unless-stopped
+    volumes:
+      - osint_data:/opt/osint
+      - ./tools/osint/config:/etc/osint
+    networks:
+      - security-net
+
+  # Password Cracking Tools (GPU Enabled)
+  password-tools:
+    build:
+      context: ../../
+      dockerfile: docker/tools/password/Dockerfile
+    container_name: security-orchestrator-password
+    restart: unless-stopped
+    volumes:
+      - password_data:/opt/password
+      - ./tools/password/config:/etc/password
+      - ./tools/password/wordlists:/opt/wordlists
+    networks:
+      - security-net
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # Social Engineering Tools
+  social-tools:
+    build:
+      context: ../../
+      dockerfile: docker/tools/social/Dockerfile
+    container_name: security-orchestrator-social
+    restart: unless-stopped
+    volumes:
+      - social_data:/opt/social
+      - ./tools/social/config:/etc/social
+      - ./tools/social/templates:/opt/templates
+    networks:
+      - security-net
+
+  # Tool Development Environment
+  tooldev-tools:
+    build:
+      context: ../../
+      dockerfile: docker/tools/tooldev/Dockerfile
+    container_name: security-orchestrator-tooldev
+    restart: unless-stopped
+    volumes:
+      - tooldev_data:/opt/tooldev
+      - ./tools/tooldev/workspace:/workspace
+    networks:
+      - security-net
+    privileged: true
+
+  # Security Monitoring Agent
+  security-monitor:
+    build:
+      context: ../../
+      dockerfile: docker/monitoring/Dockerfile
+    container_name: security-orchestrator-monitor
+    restart: unless-stopped
+    environment:
+      - ELASTICSEARCH_HOST=elasticsearch:9200
+      - PROMETHEUS_HOST=prometheus:9090
+    volumes:
+      - ./monitoring/config:/etc/monitor
+      - /var/log:/var/log/host:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro
+    networks:
+      - security-net
+    privileged: true
+    pid: host
+
+  # Backup Service
+  backup-service:
+    build:
+      context: ../../
+      dockerfile: docker/backup/Dockerfile
+    container_name: security-orchestrator-backup
+    restart: unless-stopped
+    environment:
+      - BACKUP_SCHEDULE=${BACKUP_SCHEDULE:-0 2 * * *}
+      - S3_BUCKET=${S3_BUCKET}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    volumes:
+      - ./backups:/backups
+      - postgres_data:/data/postgres:ro
+      - redis_data:/data/redis:ro
+      - elasticsearch_data:/data/elasticsearch:ro
+    networks:
+      - security-net
+
+  # Update Service
+  update-service:
+    build:
+      context: ../../
+      dockerfile: docker/update/Dockerfile
+    container_name: security-orchestrator-update
+    restart: unless-stopped
+    environment:
+      - UPDATE_SCHEDULE=${UPDATE_SCHEDULE:-0 3 * * 0}
+      - AUTO_UPDATE=${AUTO_UPDATE:-false}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./update/config:/etc/update
+    networks:
+      - security-net
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  blackarch_data:
+    driver: local
+  offensive_data:
+    driver: local
+  defensive_data:
+    driver: local
+  osint_data:
+    driver: local
+  password_data:
+    driver: local
+  social_data:
+    driver: local
+  tooldev_data:
+    driver: local
+
+networks:
+  security-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
