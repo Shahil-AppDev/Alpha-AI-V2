@@ -38,7 +38,7 @@ jobs:
 
                   # Add NodeSource repository
                   if [ '${{ github.event.inputs.setup_node }}' = 'true' ]; then
-                    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+                    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
                     apt-get install -y nodejs
                   fi
 
