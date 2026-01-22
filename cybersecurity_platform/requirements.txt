@@ -1,0 +1,30 @@
+# Enhanced Cybersecurity Platform Requirements
+
+# Core dependencies
+python-dateutil>=2.8.2
+typing-extensions>=4.5.0
+
+# System monitoring
+psutil>=5.9.0
+
+# Optional: For advanced features
+# requests>=2.31.0
+# flask>=2.3.0
+# fastapi>=0.100.0
+# uvicorn>=0.23.0
+# sqlalchemy>=2.0.0
+# redis>=4.6.0
+
+# AI/ML (optional)
+# numpy>=1.24.0
+# pandas>=2.0.0
+# scikit-learn>=1.2.0
+# tensorflow>=2.12.0
+# torch>=2.0.0
+
+# Security tools (must be installed separately on Kali Linux)
+# nmap
+# metasploit-framework
+# burpsuite
+# wireshark
+# john
