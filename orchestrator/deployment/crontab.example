@@ -1,0 +1,17 @@
+# Crontab configuration for AI Agent Orchestrator
+# Install with: crontab crontab.example
+
+# Security Tools Daily Update (runs at 2 AM every day)
+0 2 * * * /usr/bin/python3 /path/to/orchestrator/utils/cron_updater.py >> /var/log/orchestrator/cron.log 2>&1
+
+# Alternative: Weekly update (runs at 2 AM every Sunday)
+# 0 2 * * 0 /usr/bin/python3 /path/to/orchestrator/utils/cron_updater.py >> /var/log/orchestrator/cron.log 2>&1
+
+# Health check (runs every hour)
+0 * * * * /usr/bin/python3 /path/to/orchestrator/utils/health_check.py >> /var/log/orchestrator/health.log 2>&1
+
+# Cleanup old logs (runs at 3 AM every day)
+0 3 * * * find /var/log/orchestrator -name "*.log" -mtime +30 -delete
+
+# Backup configuration (runs at 4 AM every day)
+0 4 * * * tar -czf /backup/orchestrator-config-$(date +\%Y\%m\%d).tar.gz /path/to/orchestrator/config

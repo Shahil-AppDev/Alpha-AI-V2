@@ -12,6 +12,7 @@ from .core.security_module import EnterpriseGradeSecurityModule
 from .core.knowledge_graph import KnowledgeGraph
 from .core.ml_engine import MachineLearningEngine
 from .core.event_architecture import EventDrivenArchitecture
+from .core.security_skill_manager import SecuritySkillManager
 
 
 class EnhancedOrchestrator:
@@ -54,6 +55,8 @@ class EnhancedOrchestrator:
         
         self.ml_engine = MachineLearningEngine()
         
+        self.security_skill_manager = SecuritySkillManager()
+        
         self._initialized = False
     
     def initialize(self, security_policies: Optional[Dict] = None):
@@ -72,6 +75,7 @@ class EnhancedOrchestrator:
             raise RuntimeError("Orchestrator must be initialized before starting monitoring")
         
         self.monitoring_system.start_monitoring()
+        self.security_skill_manager.start_auto_update()
         return True
     
     def register_agent(self, agent_id: str, agent_type: str, config: Dict) -> str:
@@ -171,8 +175,29 @@ class EnhancedOrchestrator:
     def shutdown(self):
         """Shutdown the orchestrator"""
         self.event_architecture.publish_event('system.shutdown', {'status': 'shutting_down'})
+        self.security_skill_manager.stop_auto_update()
         self._initialized = False
         return True
+    
+    def get_security_skill(self, skill_id: str):
+        """Get a security skill by ID"""
+        return self.security_skill_manager.get_skill(skill_id)
+    
+    def list_security_skills(self) -> list:
+        """List all available security skills"""
+        return list(self.security_skill_manager.skills.keys())
+    
+    def allocate_security_skill(self, skill_id: str, agent_id: str) -> bool:
+        """Allocate a security skill to an agent"""
+        return self.security_skill_manager.allocate_skill(skill_id, agent_id)
+    
+    def release_security_skill(self, skill_id: str) -> bool:
+        """Release a security skill"""
+        return self.security_skill_manager.release_skill(skill_id)
+    
+    def get_security_skill_stats(self) -> dict:
+        """Get security skill statistics"""
+        return self.security_skill_manager.get_skill_stats()
 
 
 def create_orchestrator(config: Optional[Dict] = None) -> EnhancedOrchestrator:
