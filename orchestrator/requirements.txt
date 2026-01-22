@@ -1,0 +1,16 @@
+# Enhanced AI Agent Orchestrator Requirements
+
+# Core dependencies
+python-dateutil>=2.8.2
+typing-extensions>=4.5.0
+
+# Data structures and utilities
+dataclasses>=0.6
+uuid>=1.30
+
+# Optional: For advanced features
+# numpy>=1.24.0
+# pandas>=2.0.0
+# scikit-learn>=1.2.0
+# tensorflow>=2.12.0
+# torch>=2.0.0
