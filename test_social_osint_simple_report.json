@@ -1,0 +1,7 @@
+{
+  "test_suite": "SocialOSINTAgent Simple",
+  "timestamp": "2026-01-22T09:50:14.160297",
+  "agent_test": true,
+  "tool_manager_test": false,
+  "overall_success": false
+}

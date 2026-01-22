@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/tools/layout,_N_T_/tools/anydesk-backdoor/layout,_N_T_/tools/anydesk-backdoor/page,_N_T_/tools/anydesk-backdoor"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/tools/anydesk-backdoor/__PAGE__",
+    "/tools/anydesk-backdoor",
+    "/tools",
+    "/_index",
+    "/_head"
+  ]
+}

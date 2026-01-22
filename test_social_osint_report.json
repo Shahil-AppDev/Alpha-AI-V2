@@ -1,0 +1,69 @@
+{
+  "test_suite": "SocialOSINTAgent",
+  "timestamp": "2026-01-22T09:48:01.540049",
+  "total_tests": 12,
+  "passed_tests": 12,
+  "failed_tests": 0,
+  "results": [
+    {
+      "test": "test_agent_initialization",
+      "passed": true,
+      "timestamp": "2026-01-22T09:47:52.103551"
+    },
+    {
+      "test": "test_target_management",
+      "passed": true,
+      "timestamp": "2026-01-22T09:47:52.104073"
+    },
+    {
+      "test": "test_data_collection",
+      "passed": true,
+      "timestamp": "2026-01-22T09:47:52.745273"
+    },
+    {
+      "test": "test_data_processing",
+      "passed": true,
+      "timestamp": "2026-01-22T09:47:52.745544"
+    },
+    {
+      "test": "test_sentiment_analysis",
+      "passed": true,
+      "timestamp": "2026-01-22T09:47:52.745805"
+    },
+    {
+      "test": "test_password_cracking",
+      "passed": true,
+      "timestamp": "2026-01-22T09:47:55.092915"
+    },
+    {
+      "test": "test_osint_tools",
+      "passed": true,
+      "timestamp": "2026-01-22T09:47:55.916555"
+    },
+    {
+      "test": "test_report_generation",
+      "passed": true,
+      "timestamp": "2026-01-22T09:47:55.916984"
+    },
+    {
+      "test": "test_ethical_compliance",
+      "passed": true,
+      "timestamp": "2026-01-22T09:47:55.917354"
+    },
+    {
+      "test": "test_security_integration",
+      "passed": true,
+      "timestamp": "2026-01-22T09:47:56.743398"
+    },
+    {
+      "test": "test_complete_workflow",
+      "passed": true,
+      "timestamp": "2026-01-22T09:48:01.539327"
+    },
+    {
+      "test": "test_error_handling",
+      "passed": true,
+      "timestamp": "2026-01-22T09:48:01.539845"
+    }
+  ]
+}

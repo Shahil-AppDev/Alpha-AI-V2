@@ -1,0 +1,12 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/auth/page": "/auth",
+  "/dashboard/page": "/dashboard",
+  "/page": "/",
+  "/tools/anydesk-backdoor/page": "/tools/anydesk-backdoor",
+  "/tools/beef-security/page": "/tools/beef-security",
+  "/tools/defensive-security-training/page": "/tools/defensive-security-training",
+  "/tools/reverse-engineer/page": "/tools/reverse-engineer",
+  "/tools/rustdesk/page": "/tools/rustdesk"
+}

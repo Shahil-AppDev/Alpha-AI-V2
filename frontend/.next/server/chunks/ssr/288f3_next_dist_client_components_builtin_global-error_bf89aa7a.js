@@ -1,0 +1,3 @@
+module.exports=[47980,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(60503);a.n(d("[project]/Desktop/Projet Web/Alpha AI/frontend/node_modules/next/dist/client/components/builtin/global-error.js <module evaluation>"))},95296,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(60503);a.n(d("[project]/Desktop/Projet Web/Alpha AI/frontend/node_modules/next/dist/client/components/builtin/global-error.js"))},59767,a=>{"use strict";a.i(47980);var b=a.i(95296);a.n(b)}];
+
+//# sourceMappingURL=288f3_next_dist_client_components_builtin_global-error_bf89aa7a.js.map

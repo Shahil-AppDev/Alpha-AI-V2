@@ -1,0 +1,110 @@
+{
+  "version": 3,
+  "pages404": true,
+  "appType": "app",
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "priority": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [
+      {
+        "source": "/api/:path*",
+        "destination": "http://localhost:8080/api/:path*",
+        "regex": "^/api(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+      }
+    ],
+    "fallback": []
+  },
+  "dynamicRoutes": [],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_global-error",
+      "regex": "^/_global\\-error(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_global\\-error(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/auth",
+      "regex": "^/auth(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth(?:/)?$"
+    },
+    {
+      "page": "/dashboard",
+      "regex": "^/dashboard(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard(?:/)?$"
+    },
+    {
+      "page": "/tools/anydesk-backdoor",
+      "regex": "^/tools/anydesk\\-backdoor(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/tools/anydesk\\-backdoor(?:/)?$"
+    },
+    {
+      "page": "/tools/beef-security",
+      "regex": "^/tools/beef\\-security(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/tools/beef\\-security(?:/)?$"
+    },
+    {
+      "page": "/tools/defensive-security-training",
+      "regex": "^/tools/defensive\\-security\\-training(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/tools/defensive\\-security\\-training(?:/)?$"
+    },
+    {
+      "page": "/tools/reverse-engineer",
+      "regex": "^/tools/reverse\\-engineer(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/tools/reverse\\-engineer(?:/)?$"
+    },
+    {
+      "page": "/tools/rustdesk",
+      "regex": "^/tools/rustdesk(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/tools/rustdesk(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments",
+    "clientParamParsing": false,
+    "dynamicRSCPrerender": false
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

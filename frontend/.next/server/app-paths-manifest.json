@@ -1,0 +1,12 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/auth/page": "app/auth/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/page": "app/page.js",
+  "/tools/anydesk-backdoor/page": "app/tools/anydesk-backdoor/page.js",
+  "/tools/beef-security/page": "app/tools/beef-security/page.js",
+  "/tools/defensive-security-training/page": "app/tools/defensive-security-training/page.js",
+  "/tools/reverse-engineer/page": "app/tools/reverse-engineer/page.js",
+  "/tools/rustdesk/page": "app/tools/rustdesk/page.js"
+}
