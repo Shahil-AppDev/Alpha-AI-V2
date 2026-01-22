@@ -1,10 +1,11 @@
 'use client';
 
+import { Toaster } from '@/components/ui/toaster';
+import { AuthProvider } from '@/lib/auth-context';
+import { ThemeProvider } from 'next-themes';
+import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
-import { useState } from 'react';
-import { ThemeProvider } from 'next-themes';
-import { Toaster } from '@/components/ui/toaster';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -28,9 +29,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
         enableSystem
         disableTransitionOnChange
       >
-        {children}
-        <Toaster />
-        <ReactQueryDevtools initialIsOpen={false} />
+        <AuthProvider>
+          {children}
+          <Toaster />
+          <ReactQueryDevtools initialIsOpen={false} />
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
