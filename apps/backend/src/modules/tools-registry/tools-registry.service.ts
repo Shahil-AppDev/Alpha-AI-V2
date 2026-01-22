@@ -10,6 +10,7 @@ interface CreateToolDto {
   riskLevel: RiskLevel;
   code: string;
   parameters?: any;
+  enabled?: boolean;
 }
 
 @Injectable()
@@ -120,7 +121,11 @@ export class ToolsRegistryService {
 
   async toggleEnabled(id: string): Promise<Tool> {
     const tool = await this.findOne(id);
-    return this.update(id, { enabled: !tool.enabled });
+    const updateData = { enabled: !tool.enabled };
+    return this.prisma.tool.update({
+      where: { id },
+      data: updateData,
+    });
   }
 
   async getToolsByCategory(): Promise<Record<string, Tool[]>> {
