@@ -42,21 +42,6 @@ pids
 # Coverage directory used by tools like istanbul
 coverage/
 
-# Security tools (git submodules)
-PowerSploit/
-binwalk/
-gophish/
-hashcat/
-john/
-metasploit-framework/
-mimikatz/
-recon-ng/
-spiderfoot/
-sqlmap/
-thc-hydra/
-tools/
-zaproxy/
-
 # Temporary files
 *.tmp
 *.temp
