@@ -250,6 +250,7 @@ export function AuthForm() {
                         type="checkbox"
                         id="remember"
                         className="rounded border-slate-600 bg-slate-700 text-purple-600 focus:ring-purple-600"
+                        aria-label="Remember me"
                       />
                       <Label htmlFor="remember" className="text-sm text-gray-300">Remember me</Label>
                     </div>
@@ -404,6 +405,7 @@ export function AuthForm() {
                       id="terms"
                       className="rounded border-slate-600 bg-slate-700 text-purple-600 focus:ring-purple-600"
                       required
+                      aria-label="I agree to the Terms of Service and Privacy Policy"
                     />
                     <Label htmlFor="terms" className="text-sm text-gray-300">
                       I agree to the{" "}
