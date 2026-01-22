@@ -35,7 +35,7 @@ export class ToolsRegistryService {
 
       this.logger.log(`Tool created: ${tool.name} (${tool.id})`);
       return tool;
-    } catch (error) {
+    } catch (error: any) {
       if (error.code === 'P2002') {
         throw new BadRequestException(`Tool with name '${createToolDto.name}' already exists`);
       }
@@ -95,7 +95,7 @@ export class ToolsRegistryService {
 
       this.logger.log(`Tool updated: ${tool.name} (${tool.id})`);
       return tool;
-    } catch (error) {
+    } catch (error: any) {
       if (error.code === 'P2025') {
         throw new NotFoundException(`Tool with ID '${id}' not found`);
       }
@@ -111,7 +111,7 @@ export class ToolsRegistryService {
 
       this.logger.log(`Tool deleted: ${tool.name} (${tool.id})`);
       return tool;
-    } catch (error) {
+    } catch (error: any) {
       if (error.code === 'P2025') {
         throw new NotFoundException(`Tool with ID '${id}' not found`);
       }
