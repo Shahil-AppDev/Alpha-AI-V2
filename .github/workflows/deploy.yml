@@ -13,7 +13,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,7 +28,7 @@ jobs:
         run: |
           cd frontend
           npm ci
-          NEXT_PUBLIC_API_URL=https://api.qatar-one.app npm run build
+          npm run build
         env:
           NEXT_PUBLIC_API_URL: https://api.qatar-one.app
 
@@ -42,8 +42,27 @@ jobs:
       # Create deployment archives
       - name: Create deployment archives
         run: |
-          cd frontend/out && tar -czf ../../frontend-deploy.tar.gz .
-          cd ../../apps/backend && tar -czf ../../backend-deploy.tar.gz dist package.json package-lock.json prisma
+          # Frontend archive
+          if [ -d "frontend/out" ]; then
+            cd frontend/out
+            tar -czf ../../frontend-deploy.tar.gz .
+            cd ../..
+          else
+            echo "Error: frontend/out directory not found"
+            ls -la frontend/
+            exit 1
+          fi
+
+          # Backend archive
+          if [ -d "apps/backend/dist" ]; then
+            cd apps/backend
+            tar -czf ../../backend-deploy.tar.gz dist package.json package-lock.json prisma
+            cd ../..
+          else
+            echo "Error: apps/backend/dist directory not found"
+            ls -la apps/backend/
+            exit 1
+          fi
 
       # Setup SSH
       - name: Setup SSH
@@ -59,7 +78,7 @@ jobs:
           # Transfer archives
           scp -i ~/.ssh/deploy_key frontend-deploy.tar.gz root@${{ secrets.SERVER_HOST }}:/tmp/
           scp -i ~/.ssh/deploy_key backend-deploy.tar.gz root@${{ secrets.SERVER_HOST }}:/tmp/
-          
+
           # Deploy on server
           ssh -i ~/.ssh/deploy_key root@${{ secrets.SERVER_HOST }} << 'ENDSSH'
             set -e
