@@ -67,3 +67,6 @@ github-actions-key.pub
 *-deploy.tar.gz
 frontend-deploy.*
 backend-deploy.*
+
+# Security tools (large repositories)
+tools/*/
