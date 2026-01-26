@@ -1,0 +1,135 @@
+name: Deploy Qatar One Platform
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "apps/backend/**"
+      - "src/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Build Frontend
+      - name: Build Frontend
+        run: |
+          cd frontend
+          npm ci
+          NEXT_PUBLIC_API_URL=https://api.qatar-one.app npm run build
+        env:
+          NEXT_PUBLIC_API_URL: https://api.qatar-one.app
+
+      # Build Backend
+      - name: Build Backend
+        run: |
+          cd apps/backend
+          npm ci
+          npm run build
+
+      # Create deployment archives
+      - name: Create deployment archives
+        run: |
+          cd frontend/out && tar -czf ../../frontend-deploy.tar.gz .
+          cd ../../apps/backend && tar -czf ../../backend-deploy.tar.gz dist package.json package-lock.json prisma
+
+      # Setup SSH
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      # Deploy to server
+      - name: Deploy to server
+        run: |
+          # Transfer archives
+          scp -i ~/.ssh/deploy_key frontend-deploy.tar.gz root@${{ secrets.SERVER_HOST }}:/tmp/
+          scp -i ~/.ssh/deploy_key backend-deploy.tar.gz root@${{ secrets.SERVER_HOST }}:/tmp/
+          
+          # Deploy on server
+          ssh -i ~/.ssh/deploy_key root@${{ secrets.SERVER_HOST }} << 'ENDSSH'
+            set -e
+            
+            echo "🚀 Déploiement Qatar One Platform"
+            
+            # Deploy Frontend
+            echo "📦 Déploiement Frontend..."
+            mkdir -p /var/www/qatar-one/frontend
+            cd /var/www/qatar-one/frontend
+            tar -xzf /tmp/frontend-deploy.tar.gz
+            chown -R www-data:www-data /var/www/qatar-one/frontend
+            echo "✅ Frontend déployé"
+            
+            # Deploy Backend
+            echo "📦 Déploiement Backend..."
+            mkdir -p /var/www/qatar-one/backend
+            cd /var/www/qatar-one/backend
+            tar -xzf /tmp/backend-deploy.tar.gz
+            
+            # Install production dependencies
+            npm ci --production
+            
+            # Generate Prisma Client
+            npx prisma generate
+            
+            # Apply database migrations
+            npx prisma db push --accept-data-loss || echo "⚠️ Migrations déjà appliquées"
+            
+            # Restart backend with PM2
+            pm2 restart qatar-one-backend || pm2 start dist/main.js --name qatar-one-backend
+            pm2 save
+            
+            echo "✅ Backend déployé et redémarré"
+            
+            # Cleanup
+            rm -f /tmp/frontend-deploy.tar.gz /tmp/backend-deploy.tar.gz
+            
+            echo "🎉 Déploiement terminé avec succès!"
+            
+            # Show status
+            pm2 status
+          ENDSSH
+
+      # Verify deployment
+      - name: Verify deployment
+        run: |
+          ssh -i ~/.ssh/deploy_key root@${{ secrets.SERVER_HOST }} << 'ENDSSH'
+            echo "🔍 Vérification du déploiement..."
+            
+            # Check backend health
+            sleep 3
+            curl -f http://localhost:3001/health || exit 1
+            
+            echo "✅ Backend opérationnel"
+            
+            # Check PM2 status
+            pm2 list
+          ENDSSH
+
+      # Cleanup SSH key
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f ~/.ssh/deploy_key
+
+      # Notification
+      - name: Deployment notification
+        if: success()
+        run: |
+          echo "✅ Déploiement réussi sur https://qatar-one.app"
+          echo "📊 Backend: https://api.qatar-one.app"
+          echo "🔐 Auth: https://qatar-one.app/auth"

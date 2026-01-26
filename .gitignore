@@ -45,3 +45,25 @@ coverage/
 # Temporary files
 *.tmp
 *.temp
+
+# Credentials and sensitive data
+.server-credentials
+*-credentials.md
+*-credentials.csv
+*-credentials.json
+*.pem
+*.key
+id_*
+*.pub
+
+# SSH keys for deployment
+github-deploy-key
+github-deploy-key.pub
+github-actions-key
+github-actions-key.pub
+
+# Deployment archives
+*-deploy.zip
+*-deploy.tar.gz
+frontend-deploy.*
+backend-deploy.*
