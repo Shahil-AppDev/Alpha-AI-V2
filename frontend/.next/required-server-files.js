@@ -71,7 +71,7 @@ self.__SERVER_FILES_MANIFEST={
       "qualities": [
         75
       ],
-      "unoptimized": false
+      "unoptimized": true
     },
     "devIndicators": {
       "position": "bottom-left"
@@ -96,6 +96,7 @@ self.__SERVER_FILES_MANIFEST={
     "compiler": {},
     "expireTime": 31536000,
     "staticPageGenerationTimeout": 60,
+    "output": "export",
     "modularizeImports": {
       "@mui/icons-material": {
         "transform": "@mui/icons-material/{{member}}"
@@ -302,17 +303,7 @@ self.__SERVER_FILES_MANIFEST={
     "turbopack": {
       "root": "C:\\Users\\DarkNode"
     },
-    "distDirRoot": ".next",
-    "_originalRewrites": {
-      "beforeFiles": [],
-      "afterFiles": [
-        {
-          "source": "/api/:path*",
-          "destination": "http://localhost:8080/api/:path*"
-        }
-      ],
-      "fallback": []
-    }
+    "distDirRoot": "out"
   },
   "appDir": "C:\\Users\\DarkNode\\Desktop\\Projet Web\\Alpha AI\\frontend",
   "relativeAppDir": "Desktop\\Projet Web\\Alpha AI\\frontend",
