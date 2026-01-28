@@ -70,3 +70,29 @@ backend-deploy.*
 
 # Security tools (large repositories)
 tools/*/
+
+# Credentials files - DO NOT COMMIT
+users-credentials.csv
+*.csv
+
+# Security tools - too large for git
+binwalk/
+gophish/
+hashcat/
+john/
+metasploit-framework/
+mimikatz/
+PowerSploit/
+recon-ng/
+spiderfoot/
+sqlmap/
+thc-hydra/
+zaproxy/
+
+# Deployment scripts - obsolete
+deploy-backend-vps.ps1
+deploy-backend-vps.sh
+deploy-security-orchestrator.sh
+install-tools-server.sh
+install-tools-simple.sh
+install-tools.ps1
