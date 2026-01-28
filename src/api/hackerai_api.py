@@ -18,9 +18,18 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
+from fastapi import Query
 import uvicorn
 
 # Import our modules
+import sys
+from pathlib import Path
+
+# Add src directory to path
+src_path = str(Path(__file__).parent.parent)
+if src_path not in sys.path:
+    sys.path.insert(0, src_path)
+
 from modules.universal_tool_manager import (
     UniversalToolManager, HackerAIPlatform, ToolCategory, ExecutionMode
 )
@@ -291,7 +300,7 @@ async def get_execution_status(execution_id: str, current_user: dict = Depends(g
 @app.get("/api/v1/executions", tags=["Execution"])
 async def list_executions(
     tool_name: Optional[str] = None,
-    limit: int = Field(100, ge=1, le=1000),
+    limit: int = Query(100, ge=1, le=1000),
     current_user: dict = Depends(get_current_user)
 ):
     """List execution history."""
@@ -502,7 +511,7 @@ async def list_categories(current_user: dict = Depends(get_current_user)):
 async def start_background_scan(
     target: str,
     background_tasks: BackgroundTasks,
-    categories: List[str] = Field(default=["osint", "network"]),
+    categories: List[str] = Query(default=["osint", "network"]),
     current_user: dict = Depends(get_current_user)
 ):
     """Start a background comprehensive scan."""

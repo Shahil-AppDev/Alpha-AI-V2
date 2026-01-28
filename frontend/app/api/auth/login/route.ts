@@ -8,10 +8,10 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-t
 
 export async function POST(request: NextRequest) {
   try {
-    const { username, password } = await request.json();
+    const { email, password } = await request.json();
 
-    // Validate credentials
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    // Validate credentials (accept both email and username)
+    if ((email === ADMIN_EMAIL || email === ADMIN_USERNAME) && password === ADMIN_PASSWORD) {
       // Generate JWT token
       const token = jwt.sign(
         {
@@ -27,9 +27,11 @@ export async function POST(request: NextRequest) {
         success: true,
         token,
         user: {
-          username: ADMIN_USERNAME,
+          id: ADMIN_USERNAME,
+          name: ADMIN_USERNAME,
           email: ADMIN_EMAIL,
           role: 'admin',
+          permissions: ['*'],
         },
       });
     } else {
