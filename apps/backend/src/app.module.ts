@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './modules/auth/auth.module';
 import { DatabaseModule } from './modules/database/database.module';
 import { ToolsRegistryModule } from './modules/tools-registry/tools-registry.module';
 
@@ -12,6 +13,7 @@ import { ToolsRegistryModule } from './modules/tools-registry/tools-registry.mod
     }),
     DatabaseModule,
     ToolsRegistryModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
