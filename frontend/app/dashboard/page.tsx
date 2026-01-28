@@ -143,6 +143,14 @@ export default function DashboardPage() {
                 <Button
                   variant="ghost"
                   size="sm"
+                  className="text-gray-300 hover:text-white"
+                  title="AI Chat Assistant"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={logout}
                   className="text-gray-300 hover:text-white"
                 >
