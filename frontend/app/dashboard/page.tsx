@@ -20,6 +20,7 @@ import {
     Key,
     Lock,
     LogOut,
+    MessageSquare,
     Monitor,
     Network,
     Shield,
