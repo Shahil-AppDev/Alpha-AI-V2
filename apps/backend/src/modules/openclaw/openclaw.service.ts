@@ -1,12 +1,6 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { WebSocket } from 'ws';
 
-interface OpenClawMessage {
-  id: string;
-  message: string;
-  timestamp: Date;
-  response?: string;
-}
 
 interface ToolContext {
   name: string;
@@ -43,7 +37,7 @@ export class OpenClawService implements OnModuleInit, OnModuleDestroy {
     this.registerTool({
       name: 'network_scan',
       description: 'Scan networks and hosts for open ports, services, and vulnerabilities',
-      execute: async (params) => {
+      execute: async () => {
         return {
           tool: 'network_scan',
           status: 'available',
@@ -56,7 +50,7 @@ export class OpenClawService implements OnModuleInit, OnModuleDestroy {
     this.registerTool({
       name: 'code_analysis',
       description: 'Analyze code snippets for security vulnerabilities using static analysis',
-      execute: async (params) => {
+      execute: async () => {
         return {
           tool: 'code_analysis',
           status: 'available',
@@ -69,7 +63,7 @@ export class OpenClawService implements OnModuleInit, OnModuleDestroy {
     this.registerTool({
       name: 'exploit_tools',
       description: 'Generate reverse shell payloads and adapt exploit templates',
-      execute: async (params) => {
+      execute: async () => {
         return {
           tool: 'exploit_tools',
           status: 'available',
@@ -82,7 +76,7 @@ export class OpenClawService implements OnModuleInit, OnModuleDestroy {
     this.registerTool({
       name: 'password_cracker',
       description: 'Crack password hashes using various algorithms and wordlists',
-      execute: async (params) => {
+      execute: async () => {
         return {
           tool: 'password_cracker',
           status: 'available',
@@ -95,7 +89,7 @@ export class OpenClawService implements OnModuleInit, OnModuleDestroy {
     this.registerTool({
       name: 'anydesk_backdoor',
       description: 'Remote desktop backdoor tool for penetration testing',
-      execute: async (params) => {
+      execute: async () => {
         return {
           tool: 'anydesk_backdoor',
           status: 'available',
@@ -108,7 +102,7 @@ export class OpenClawService implements OnModuleInit, OnModuleDestroy {
     this.registerTool({
       name: 'rustdesk',
       description: 'Open-source remote desktop solution with self-hosting capabilities',
-      execute: async (params) => {
+      execute: async () => {
         return {
           tool: 'rustdesk',
           status: 'available',
@@ -121,7 +115,7 @@ export class OpenClawService implements OnModuleInit, OnModuleDestroy {
     this.registerTool({
       name: 'reverse_engineer',
       description: 'Advanced JavaScript code analysis, deobfuscation, and pattern detection',
-      execute: async (params) => {
+      execute: async () => {
         return {
           tool: 'reverse_engineer',
           status: 'available',
@@ -134,7 +128,7 @@ export class OpenClawService implements OnModuleInit, OnModuleDestroy {
     this.registerTool({
       name: 'beef_security',
       description: 'Browser security testing for educational awareness training',
-      execute: async (params) => {
+      execute: async () => {
         return {
           tool: 'beef_security',
           status: 'available',
@@ -147,7 +141,7 @@ export class OpenClawService implements OnModuleInit, OnModuleDestroy {
     this.registerTool({
       name: 'defensive_security',
       description: 'Educational threat analysis and defensive strategy training',
-      execute: async (params) => {
+      execute: async () => {
         return {
           tool: 'defensive_security',
           status: 'available',
@@ -165,15 +159,21 @@ export class OpenClawService implements OnModuleInit, OnModuleDestroy {
 
   async connect() {
     try {
-      this.ws = new WebSocket(this.gatewayUrl, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
-      });
+      this.ws = new WebSocket(this.gatewayUrl);
 
       this.ws.on('open', () => {
         this.logger.log('Connected to OpenClaw gateway');
-        this.sendToolsManifest();
+        
+        // Send connect message with auth token according to OpenClaw protocol
+        const connectMessage = {
+          type: 'connect',
+          params: {
+            auth: {
+              token: this.token,
+            },
+          },
+        };
+        this.ws.send(JSON.stringify(connectMessage));
       });
 
       this.ws.on('message', (data) => {
@@ -209,21 +209,16 @@ export class OpenClawService implements OnModuleInit, OnModuleDestroy {
       const message = JSON.parse(data);
       this.logger.debug(`Received message: ${JSON.stringify(message)}`);
 
-      // Handle authentication challenge
-      if (message.type === 'event' && message.event === 'connect.challenge') {
-        this.logger.log('Responding to OpenClaw authentication challenge');
-        const authResponse = {
-          type: 'auth',
-          token: this.token,
-          nonce: message.payload?.nonce,
-        };
-        this.ws.send(JSON.stringify(authResponse));
-        return;
-      }
-
       // Handle authenticated confirmation
       if (message.type === 'event' && message.event === 'connect.authenticated') {
         this.logger.log('Successfully authenticated with OpenClaw gateway');
+        this.sendToolsManifest();
+        return;
+      }
+
+      // Handle connection errors
+      if (message.type === 'error') {
+        this.logger.error(`OpenClaw error: ${message.error || 'Unknown error'}`);
         return;
       }
 
