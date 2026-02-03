@@ -30,9 +30,11 @@ import {
     Users,
     Zap
 } from "lucide-react";
+import { useState } from "react";
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const stats = [
     {
@@ -144,6 +146,7 @@ export default function DashboardPage() {
                 <Button
                   variant="ghost"
                   size="sm"
+                  onClick={() => setIsChatOpen(true)}
                   className="text-gray-300 hover:text-white"
                   title="AI Chat Assistant"
                 >
@@ -161,6 +164,8 @@ export default function DashboardPage() {
             </div>
           </div>
         </header>
+
+        <OpenClawChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { DatabaseModule } from './modules/database/database.module';
+import { OpenClawModule } from './modules/openclaw/openclaw.module';
 import { ToolsRegistryModule } from './modules/tools-registry/tools-registry.module';
 
 @Module({
@@ -14,6 +15,7 @@ import { ToolsRegistryModule } from './modules/tools-registry/tools-registry.mod
     DatabaseModule,
     ToolsRegistryModule,
     AuthModule,
+    OpenClawModule,
   ],
   controllers: [AppController],
   providers: [AppService],
