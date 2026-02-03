@@ -20,10 +20,9 @@ export class OpenClawService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     this.registerSecurityTools();
-    // OpenClaw connection disabled - authentication protocol incompatible
-    // Use AI Agents instead via /api/agents endpoints
-    this.logger.warn('OpenClaw connection disabled - using AI Agents as alternative');
-    // this.connect();
+    // Attempting OpenClaw connection
+    this.logger.log('Initializing OpenClaw connection...');
+    this.connect();
   }
 
   async onModuleDestroy() {
