@@ -18,8 +18,8 @@ COPY package*.json ./prisma/ ./
 # Install dependencies
 RUN npm install
 
-# Generate Prisma Client with force flag
-RUN npx prisma generate --force
+# Generate Prisma Client
+RUN npx prisma generate
 
 # Copy source code
 COPY . .
