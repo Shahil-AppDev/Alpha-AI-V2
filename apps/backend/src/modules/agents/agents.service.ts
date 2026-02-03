@@ -61,8 +61,8 @@ export class AgentsService implements OnModuleInit {
           'Attack simulation',
         ],
         stats: {
-          tasksCompleted: 87,
-          successRate: 87,
+          tasksCompleted: 342,
+          successRate: 100,
           lastActivity: new Date(),
         },
       },
@@ -81,8 +81,8 @@ export class AgentsService implements OnModuleInit {
           'Defense strategy',
         ],
         stats: {
-          tasksCompleted: 234,
-          successRate: 92,
+          tasksCompleted: 587,
+          successRate: 100,
           lastActivity: new Date(),
         },
       },
@@ -90,7 +90,7 @@ export class AgentsService implements OnModuleInit {
         id: 'purple-team-1',
         name: 'Purple Team Agent',
         type: 'purple-team',
-        status: 'standby',
+        status: 'active',
         model: this.mixtralModel,
         description: 'Collaborative security testing and validation',
         capabilities: [
@@ -101,16 +101,16 @@ export class AgentsService implements OnModuleInit {
           'Improvement recommendations',
         ],
         stats: {
-          tasksCompleted: 18,
-          successRate: 92,
-          lastActivity: new Date(Date.now() - 2 * 60 * 60 * 1000),
+          tasksCompleted: 156,
+          successRate: 100,
+          lastActivity: new Date(),
         },
       },
       {
         id: 'black-hat-1',
         name: 'Black Hat Agent',
         type: 'black-hat',
-        status: 'offline',
+        status: 'active',
         model: this.mixtralModel,
         description: 'Advanced threat simulation and adversarial testing',
         capabilities: [
@@ -121,9 +121,9 @@ export class AgentsService implements OnModuleInit {
           'Attack chain simulation',
         ],
         stats: {
-          tasksCompleted: 67,
-          successRate: 89,
-          lastActivity: new Date(Date.now() - 24 * 60 * 60 * 1000),
+          tasksCompleted: 423,
+          successRate: 100,
+          lastActivity: new Date(),
         },
       },
       {
@@ -141,8 +141,8 @@ export class AgentsService implements OnModuleInit {
           'Automated recommendations',
         ],
         stats: {
-          tasksCompleted: 156,
-          successRate: 94,
+          tasksCompleted: 892,
+          successRate: 100,
           lastActivity: new Date(),
         },
       },
