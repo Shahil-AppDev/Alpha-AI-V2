@@ -36,6 +36,7 @@ import { useState } from "react";
 export default function DashboardPage() {
   const { user, logout } = useAuth();
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [, setIsAgentsPanelOpen] = useState(false);
 
   const stats = [
     {
@@ -551,10 +552,19 @@ export default function DashboardPage() {
 
           {/* Security Agents Section */}
           <div className="mb-8">
-            <h3 className="text-2xl font-bold text-white mb-6 flex items-center">
-              <Cpu className="h-6 w-6 mr-2 text-purple-400" />
-              Security Agents
-            </h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-white flex items-center">
+                <Cpu className="h-6 w-6 mr-2 text-purple-400" />
+                Security Agents
+              </h3>
+              <Button
+                onClick={() => setIsAgentsPanelOpen(true)}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              >
+                <Terminal className="h-4 w-4 mr-2" />
+                Manage Agents
+              </Button>
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {/* Red Team Agent */}
               <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
@@ -1024,6 +1034,8 @@ export default function DashboardPage() {
             </div>
           </div>
         </main>
+
+        <AgentsPanel isOpen={isAgentsPanelOpen} onClose={() => setIsAgentsPanelOpen(false)} />
       </div>
     </ProtectedRoute>
   );
