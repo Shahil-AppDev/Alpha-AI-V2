@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Send, X, Loader2, Bot, User } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { Bot, Loader2, MessageSquare, Send, User, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 interface Message {
   id: string;
@@ -27,7 +26,7 @@ export function OpenClawChat({ isOpen, onClose }: OpenClawChatProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { user } = useAuth();
+  useAuth();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -142,7 +141,7 @@ export function OpenClawChat({ isOpen, onClose }: OpenClawChatProps) {
         </CardHeader>
 
         <CardContent className="flex-1 flex flex-col p-0">
-          <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+          <div className="flex-1 p-4 overflow-auto" ref={scrollRef}>
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
                 <Bot className="h-16 w-16 text-purple-400" />
@@ -212,7 +211,7 @@ export function OpenClawChat({ isOpen, onClose }: OpenClawChatProps) {
                 )}
               </div>
             )}
-          </ScrollArea>
+          </div>
 
           <div className="p-4 border-t border-slate-700">
             <div className="flex space-x-2">
