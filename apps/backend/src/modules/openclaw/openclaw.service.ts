@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { WebSocket } from 'ws';
 
 interface OpenClawMessage {
@@ -189,7 +189,8 @@ export class OpenClawService implements OnModuleInit, OnModuleDestroy {
         this.scheduleReconnect();
       });
     } catch (error) {
-      this.logger.error(`Failed to connect to OpenClaw: ${error.message}`);
+      const err = error as Error;
+      this.logger.error(`Failed to connect to OpenClaw: ${err.message}`);
       this.scheduleReconnect();
     }
   }
@@ -214,7 +215,8 @@ export class OpenClawService implements OnModuleInit, OnModuleDestroy {
         this.messageQueue.delete(message.id);
       }
     } catch (error) {
-      this.logger.error(`Failed to parse message: ${error.message}`);
+      const err = error as Error;
+      this.logger.error(`Failed to parse message: ${err.message}`);
     }
   }
 
@@ -276,10 +278,11 @@ export class OpenClawService implements OnModuleInit, OnModuleDestroy {
         timestamp: new Date(),
       };
     } catch (error) {
-      this.logger.error(`Chat error: ${error.message}`);
+      const err = error as Error;
+      this.logger.error(`Chat error: ${err.message}`);
       return {
         success: false,
-        error: error.message,
+        error: err.message,
         timestamp: new Date(),
       };
     }
@@ -299,11 +302,12 @@ export class OpenClawService implements OnModuleInit, OnModuleDestroy {
         result,
       };
     } catch (error) {
-      this.logger.error(`Tool execution error: ${error.message}`);
+      const err = error as Error;
+      this.logger.error(`Tool execution error: ${err.message}`);
       return {
         success: false,
         tool: toolName,
-        error: error.message,
+        error: err.message,
       };
     }
   }

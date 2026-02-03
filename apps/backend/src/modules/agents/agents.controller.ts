@@ -1,6 +1,5 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { AgentsService } from './agents.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('api/agents')
 @UseGuards(JwtAuthGuard)
@@ -38,9 +37,10 @@ export class AgentsController {
         result,
       };
     } catch (error) {
+      const err = error as Error;
       return {
         success: false,
-        error: error.message,
+        error: err.message,
       };
     }
   }
@@ -57,9 +57,10 @@ export class AgentsController {
         agent,
       };
     } catch (error) {
+      const err = error as Error;
       return {
         success: false,
-        error: error.message,
+        error: err.message,
       };
     }
   }

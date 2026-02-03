@@ -1,13 +1,12 @@
+import { Logger } from '@nestjs/common';
 import {
-  WebSocketGateway,
-  WebSocketServer,
-  SubscribeMessage,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
+    OnGatewayConnection,
+    OnGatewayDisconnect,
+    SubscribeMessage,
+    WebSocketGateway,
+    WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger } from '@nestjs/common';
-import { AgentsService } from './agents.service';
 
 @WebSocketGateway({
   cors: {
@@ -56,9 +55,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       
       return { success: true, result };
     } catch (error) {
-      this.logger.error(`Agent task execution error: ${error.message}`);
-      client.emit('agent_task_error', { error: error.message });
-      return { success: false, error: error.message };
+      const err = error as Error;
+      this.logger.error(`Agent task execution error: ${err.message}`);
+      client.emit('agent_task_error', { error: err.message });
+      return { success: false, error: err.message };
     }
   }
 
@@ -78,8 +78,9 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       
       return { success: true, agent };
     } catch (error) {
-      this.logger.error(`Agent status update error: ${error.message}`);
-      return { success: false, error: error.message };
+      const err = error as Error;
+      this.logger.error(`Agent status update error: ${err.message}`);
+      return { success: false, error: err.message };
     }
   }
 }

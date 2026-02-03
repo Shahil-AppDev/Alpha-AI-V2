@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import axios from 'axios';
 
-interface Agent {
+export interface Agent {
   id: string;
   name: string;
   type: 'red-team' | 'blue-team' | 'purple-team' | 'black-hat' | 'llm-agent';
@@ -197,8 +197,9 @@ export class AgentsService implements OnModuleInit {
 
       throw new Error('No response from Mixtral');
     } catch (error) {
-      this.logger.error(`Mixtral API error: ${error.message}`);
-      throw new Error(`Failed to call Mixtral: ${error.message}`);
+      const err = error as Error;
+      this.logger.error(`Mixtral API error: ${err.message}`);
+      throw new Error(`Failed to call Mixtral: ${err.message}`);
     }
   }
 
@@ -228,7 +229,8 @@ export class AgentsService implements OnModuleInit {
         timestamp: new Date(),
       };
     } catch (error) {
-      this.logger.error(`Agent task execution failed: ${error.message}`);
+      const err = error as Error;
+      this.logger.error(`Agent task execution failed: ${err.message}`);
       throw error;
     }
   }

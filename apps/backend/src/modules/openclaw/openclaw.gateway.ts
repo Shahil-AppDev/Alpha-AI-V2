@@ -1,12 +1,12 @@
+import { Logger } from '@nestjs/common';
 import {
-  WebSocketGateway,
-  WebSocketServer,
-  SubscribeMessage,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
+    OnGatewayConnection,
+    OnGatewayDisconnect,
+    SubscribeMessage,
+    WebSocketGateway,
+    WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger } from '@nestjs/common';
 import { OpenClawService } from './openclaw.service';
 
 @WebSocketGateway({
@@ -40,9 +40,10 @@ export class OpenClawGateway implements OnGatewayConnection, OnGatewayDisconnect
       client.emit('chat_response', response);
       return response;
     } catch (error) {
-      this.logger.error(`Chat error: ${error.message}`);
-      client.emit('chat_error', { error: error.message });
-      return { success: false, error: error.message };
+      const err = error as Error;
+      this.logger.error(`Chat error: ${err.message}`);
+      client.emit('chat_error', { error: err.message });
+      return { success: false, error: err.message };
     }
   }
 
@@ -60,9 +61,10 @@ export class OpenClawGateway implements OnGatewayConnection, OnGatewayDisconnect
       client.emit('tool_result', result);
       return result;
     } catch (error) {
-      this.logger.error(`Tool execution error: ${error.message}`);
-      client.emit('tool_error', { error: error.message });
-      return { success: false, error: error.message };
+      const err = error as Error;
+      this.logger.error(`Tool execution error: ${err.message}`);
+      client.emit('tool_error', { error: err.message });
+      return { success: false, error: err.message };
     }
   }
 }
