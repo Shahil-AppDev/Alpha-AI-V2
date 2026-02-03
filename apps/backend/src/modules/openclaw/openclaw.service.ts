@@ -209,6 +209,23 @@ export class OpenClawService implements OnModuleInit, OnModuleDestroy {
       const message = JSON.parse(data);
       this.logger.debug(`Received message: ${JSON.stringify(message)}`);
 
+      // Handle authentication challenge
+      if (message.type === 'event' && message.event === 'connect.challenge') {
+        this.logger.log('Received OpenClaw authentication challenge');
+        const challengeResponse = {
+          type: 'connect.response',
+          params: {
+            auth: {
+              token: this.token,
+              nonce: message.payload?.nonce,
+            },
+          },
+        };
+        this.ws.send(JSON.stringify(challengeResponse));
+        this.logger.debug('Sent challenge response');
+        return;
+      }
+
       // Handle authenticated confirmation
       if (message.type === 'event' && message.event === 'connect.authenticated') {
         this.logger.log('Successfully authenticated with OpenClaw gateway');
